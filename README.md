@@ -1,50 +1,77 @@
-# Welcome to your Expo app 👋
+# 📱 Omnikit - The Ultimate Utility Suite
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Omnikit is a high-performance, premium utility application built with **React Native** and **Expo**. It centralizes over 12+ essential tools—from financial calculators to security utilities—into a single, beautifully designed interface with full light/dark mode support and real-time activity tracking.
 
-## Get started
+## ✨ Features
 
-1. Install dependencies
+### 🛠️ Core Toolkit
+- **Conversion Suite**: Length, Temperature, Weight, and Real-time Currency conversions.
+- **Finance & Math**: Loan/Mortgage, Compound Interest, Discount, and Tip calculators.
+- **Security & Data**: Secure Password Generator, Base64 Encoder/Decoder, QR Generator, and QR Scanner.
+- **Health & Lifestyle**: BMI Calculator, Daily Water Tracker, and High-precision Stopwatch.
 
+### 🎨 Premium Experience
+- **Dynamic Theming**: Automatically syncs with system appearance or allows manual override (Indigo-primary palette).
+- **Activity History**: Locally persists your calculation results for quick reference.
+- **Rich Interaction**: Smooth micro-animations, glassmorphism-inspired UI, and intuitive bottom-sheet editors.
+
+---
+
+## 🏗️ Architecture
+
+The project recently underwent a major architectural refactor to ensure maximum maintainability and scalability:
+
+- **Modular UI**: Reusable components (`PromoCarousel`, `HistoryCard`, `ToolItem`) extracted into `components/`.
+- **Centralized Logic**: Business logic and complex calculations decoupled from UI into `utils/calculators.js`.
+- **Custom Hooks**: Standardized data fetching (Currency rates) and side effects (Clipboard) via `hooks/`.
+- **State Management**: Global app state (Theme, History, Water) managed via **Zustand**.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (LTS)
+- Expo CLI (`npm install -g expo-cli`)
+
+### Installation
+1. **Clone the repository**:
+   ```bash
+   git clone <repo-url>
+   cd Omnikit
+   ```
+
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. **Start the development server**:
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠️ Tech Stack
+- **Framework**: [Expo](https://expo.dev/) (SDK 54)
+- **UI Architecture**: [Expo Router](https://docs.expo.dev/router/introduction/) (Link-based navigation)
+- **Styling**: Vanilla React Native StyleSheet
+- **Icons**: [Lucide React Native](https://lucide.dev/)
+- **Storage**: [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) + [Zustand Persistence](https://docs.pmnd.rs/zustand/integrations/persisting-store-data)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+## 📂 Project Structure
+```text
+Omnikit/
+├── app/               # File-based routing (screens)
+├── components/        # Reusable UI components
+├── constants/         # Theming, Tool & Promo configurations
+├── hooks/             # Custom React hooks (Currency, Clipboard)
+├── store/             # Zustand state stores
+├── utils/             # Core logic & formatters
+└── assets/            # Static images & fonts
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---

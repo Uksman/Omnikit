@@ -5,11 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Omnikit-logo.png",
-    "scheme": "omnikit",
+    "scheme": "com.omnikit.app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.uksman.Omnikit"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +20,8 @@
         "monochromeImage": "./assets/images/Omnikit-logo.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.uksman.Omnikit"
     },
     "web": {
       "output": "static",
