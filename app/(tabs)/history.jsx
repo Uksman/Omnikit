@@ -1,4 +1,3 @@
-// app/(tabs)/history.tsx
 import React from "react";
 import {
   View,
