@@ -12,6 +12,8 @@ import { ChevronLeft, Droplets, Plus, RotateCcw, Settings } from "lucide-react-n
 import { useAppTheme } from "../../context/ThemeContext";
 import { useRouter } from "expo-router";
 import { useWaterStore } from "../../store/useWaterStore";
+import { useHistory } from "../../context/HistoryContext";
+import { LineChart } from "react-native-chart-kit";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -19,10 +21,45 @@ export default function WaterTracker() {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { intake, goal, addIntake, resetIntake } = useWaterStore();
+  const { addHistory } = useHistory();
+  const { intake, goal, history, addIntake, resetIntake, checkNewDay } = useWaterStore();
+
+  React.useEffect(() => {
+    checkNewDay();
+  }, [checkNewDay]);
 
   const progress = Math.min(intake / goal, 1);
   const percentage = Math.round(progress * 100);
+
+  // Prepare Chart Data
+  const chartData = React.useMemo(() => {
+    // Show last 7 days + today
+    const labels = [...history.map(h => h.date.split('/')[0] + '/' + h.date.split('/')[1]), 'Today'].slice(-5);
+    const data = [...history.map(h => h.amount), intake].slice(-5);
+    
+    if (data.length === 1 && data[0] === 0) {
+      return { labels: ['Today'], datasets: [{ data: [0] }] };
+    }
+
+    return {
+      labels,
+      datasets: [{ data }],
+    };
+  }, [history, intake]);
+
+  const handleAddIntake = (amount) => {
+    addIntake(amount);
+    // Optional: Log to general history if first drink of the day or significant amount
+    if (intake === 0) {
+      addHistory({
+        type: 'water',
+        title: `Started Hydrating`,
+        subtitle: `Water Tracker`,
+        value: `${amount}ml started`,
+        time: "Just now",
+      });
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
@@ -39,7 +76,7 @@ export default function WaterTracker() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Progress Display */}
         <View style={styles.progressContainer}>
           <View style={[styles.progressCircleBack, { borderColor: colors.surface }]}>
@@ -64,13 +101,35 @@ export default function WaterTracker() {
           </View>
         </View>
 
+        {/* Weekly Chart */}
+        <View style={styles.chartSection}>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>WEEKLY OVERVIEW</Text>
+          <LineChart
+            data={chartData}
+            width={SCREEN_WIDTH - 48}
+            height={160}
+            chartConfig={{
+              backgroundColor: colors.background,
+              backgroundGradientFrom: colors.surface,
+              backgroundGradientTo: colors.surface,
+              decimalPlaces: 0,
+              color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+              labelColor: (opacity = 1) => colors.textMuted,
+              style: { borderRadius: 16 },
+              propsForDots: { r: "4", strokeWidth: "2", stroke: "#3b82f6" },
+            }}
+            bezier
+            style={styles.chartStyle}
+          />
+        </View>
+
         <View style={styles.actionSection}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>QUICK ADD</Text>
           <View style={styles.quickAddGrid}>
             {[250, 500, 750].map((amount) => (
               <TouchableOpacity
                 key={amount}
-                onPress={() => addIntake(amount)}
+                onPress={() => handleAddIntake(amount)}
                 style={[styles.quickAddBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
               >
                 <Plus size={16} color={colors.primary} />
@@ -82,7 +141,7 @@ export default function WaterTracker() {
 
         <View style={styles.mainActionRow}>
           <TouchableOpacity 
-            onPress={() => addIntake(100)}
+            onPress={() => handleAddIntake(100)}
             style={[styles.mainAddBtn, { backgroundColor: colors.primary }]}
           >
             <Plus size={24} color="white" />
@@ -160,6 +219,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "100%",
   },
+  chartSection: { width: "100%", marginBottom: 32 },
+  chartStyle: { borderRadius: 20, paddingRight: 40 },
   actionSection: { width: "100%", marginTop: 20 },
   label: { fontSize: 11, fontWeight: "900", letterSpacing: 1, marginBottom: 16 },
   quickAddGrid: { flexDirection: "row", gap: 12 },

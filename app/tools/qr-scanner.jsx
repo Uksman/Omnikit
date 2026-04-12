@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Linking,
   Clipboard,
 } from "react-native";
@@ -13,11 +12,13 @@ import { ChevronLeft, Copy, ExternalLink, RefreshCw } from "lucide-react-native"
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useAppTheme } from "../../context/ThemeContext";
 import { useRouter } from "expo-router";
+import { useToast } from "../../context/ToastContext";
 
 export default function QRScanner() {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { showToast } = useToast();
   
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
@@ -58,11 +59,11 @@ export default function QRScanner() {
       if (supported) {
         await Linking.openURL(scannedData);
       } else {
-        Alert.alert("Error", "Cannot open this URL");
+        showToast("Cannot open this URL", "error");
       }
     } else {
       Clipboard.setString(scannedData);
-      Alert.alert("Copied", "Content copied to clipboard");
+      showToast("Content copied to clipboard");
     }
   };
 
@@ -75,22 +76,22 @@ export default function QRScanner() {
         barcodeScannerSettings={{
           barcodeTypes: ["qr"],
         }}
-      >
-        <View style={styles.overlay}>
+      />
+
+      <View style={styles.overlay}>
+        <View style={styles.unfocusedContainer} />
+        <View style={styles.middleContainer}>
           <View style={styles.unfocusedContainer} />
-          <View style={styles.middleContainer}>
-            <View style={styles.unfocusedContainer} />
-            <View style={[styles.focusedContainer, { borderColor: colors.primary }]}>
-              <View style={[styles.corner, styles.topLeft, { borderColor: colors.primary }]} />
-              <View style={[styles.corner, styles.topRight, { borderColor: colors.primary }]} />
-              <View style={[styles.corner, styles.bottomLeft, { borderColor: colors.primary }]} />
-              <View style={[styles.corner, styles.bottomRight, { borderColor: colors.primary }]} />
-            </View>
-            <View style={styles.unfocusedContainer} />
+          <View style={[styles.focusedContainer, { borderColor: colors.primary }]}>
+            <View style={[styles.corner, styles.topLeft, { borderColor: colors.primary }]} />
+            <View style={[styles.corner, styles.topRight, { borderColor: colors.primary }]} />
+            <View style={[styles.corner, styles.bottomLeft, { borderColor: colors.primary }]} />
+            <View style={[styles.corner, styles.bottomRight, { borderColor: colors.primary }]} />
           </View>
           <View style={styles.unfocusedContainer} />
         </View>
-      </CameraView>
+        <View style={styles.unfocusedContainer} />
+      </View>
 
       {/* Header Overlay */}
       <View style={[styles.header, { top: insets.top + 10 }]}>
@@ -145,7 +146,7 @@ export default function QRScanner() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   unfocusedContainer: {

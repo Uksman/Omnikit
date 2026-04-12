@@ -14,11 +14,16 @@ import { ChevronLeft, Info, Activity } from "lucide-react-native";
 import { useAppTheme } from "../../context/ThemeContext";
 import { useRouter } from "expo-router";
 import { calculateBMIScore } from "../../utils/calculators";
+import { useHistory } from "../../context/HistoryContext";
+import { sanitizeNumeric } from "../../utils/formatters";
+import { useToast } from "../../context/ToastContext";
 
 export default function BMICalculator() {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { addHistory } = useHistory();
+  const { showToast } = useToast();
 
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -40,6 +45,19 @@ export default function BMICalculator() {
     calculateBMI();
   }, [calculateBMI]);
 
+  const handleSave = () => {
+    if (!bmi) return;
+    
+    addHistory({
+      type: 'bmi',
+      title: `BMI: ${bmi}`,
+      subtitle: `${classification.label}`,
+      value: `${weight}kg | ${height}cm`,
+      time: "Just now",
+    });
+    showToast("Saved to Activity!");
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -56,7 +74,7 @@ export default function BMICalculator() {
         <View style={{ width: 44 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Results Display */}
         <View style={[styles.resultCard, { backgroundColor: classification ? classification.color : colors.surface, borderColor: colors.border }]}>
           {bmi ? (
@@ -77,6 +95,24 @@ export default function BMICalculator() {
           )}
         </View>
 
+        {/* Save Button */}
+        {bmi && (
+           <TouchableOpacity
+           activeOpacity={0.8}
+           onPress={handleSave}
+           style={[
+             styles.saveButton,
+             {
+               backgroundColor: colors.surface,
+               borderColor: colors.border,
+             },
+           ]}
+         >
+           <Activity size={20} color={colors.primary} />
+           <Text style={[styles.saveButtonText, { color: colors.textPrimary }]}>Save to Activity</Text>
+         </TouchableOpacity>
+        )}
+
         {/* Inputs */}
         <View style={styles.inputSection}>
           <View style={styles.inputGroup}>
@@ -88,7 +124,7 @@ export default function BMICalculator() {
                 keyboardType="decimal-pad"
                 style={[styles.textInput, { color: colors.textPrimary }]}
                 value={weight}
-                onChangeText={setWeight}
+                onChangeText={(text) => setWeight(sanitizeNumeric(text))}
               />
             </View>
           </View>
@@ -102,7 +138,7 @@ export default function BMICalculator() {
                 keyboardType="decimal-pad"
                 style={[styles.textInput, { color: colors.textPrimary }]}
                 value={height}
-                onChangeText={setHeight}
+                onChangeText={(text) => setHeight(sanitizeNumeric(text))}
               />
             </View>
           </View>
@@ -177,6 +213,20 @@ const styles = StyleSheet.create({
   classificationText: { color: "white", fontSize: 14, fontWeight: "800" },
   emptyResult: { alignItems: "center", gap: 16, paddingHorizontal: 20 },
   emptyText: { textAlign: "center", fontSize: 14, fontWeight: "600", lineHeight: 20 },
+  saveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 20,
+    marginBottom: 32,
+    gap: 10,
+    borderWidth: 1,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
   inputSection: { gap: 20, marginBottom: 32 },
   inputGroup: { gap: 8 },
   inputLabel: { fontSize: 11, fontWeight: "800", letterSpacing: 1 },

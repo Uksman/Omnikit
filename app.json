@@ -21,7 +21,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.uksman.Omnikit"
+      "package": "com.uksman.Omnikit",
+      "permissions": [
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "MEDIA_LIBRARY"
+      ]
     },
     "web": {
       "output": "static",
@@ -40,11 +45,26 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Omnikit to save QR codes to your gallery.",
+          "savePhotosPermission": "Allow Omnikit to save QR codes to your gallery.",
+          "isStandard": true
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5f5281d6-4282-46c3-9249-833ea86e1a0a"
+      }
+    },
+    "owner": "uksman"
   }
 }

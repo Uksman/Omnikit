@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   Switch,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppTheme } from "../../context/ThemeContext";
 import { useHistory } from "../../context/HistoryContext";
 import { useRouter } from "expo-router";
+import { useCurrencyStore, currencies } from "../../store/useCurrencyStore";
 import {
   User,
   Bell,
@@ -27,7 +29,9 @@ import {
   Clock3,
   Database,
   Trash2,
+  Check,
 } from "lucide-react-native";
+
 const SettingsItem = ({
   icon: Icon,
   label,
@@ -98,6 +102,8 @@ export default function SettingsScreen() {
   const { clearHistory } = useHistory();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { currency, setCurrency } = useCurrencyStore();
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
 
   return (
     <View
@@ -164,7 +170,48 @@ export default function SettingsScreen() {
             { backgroundColor: colors.surface, borderColor: colors.border },
           ]}
         >
-          <SettingsItem icon={Coins} label="Default Currency" value="USD ($)" />
+          <SettingsItem 
+            icon={Coins} 
+            label="Default Currency" 
+            value={`${currency.label} (${currency.symbol})`} 
+            onPress={() => setShowCurrencyModal(true)}
+          />
+
+          <Modal
+            visible={showCurrencyModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowCurrencyModal(false)}
+          >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowCurrencyModal(false)}
+            >
+              <View style={[styles.modalContent, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Choose Currency</Text>
+                {currencies.map((item) => (
+                  <TouchableOpacity
+                    key={item.value}
+                    onPress={() => {
+                      setCurrency(item);
+                      setShowCurrencyModal(false);
+                    }}
+                    style={styles.option}
+                  >
+                    <View style={styles.optionLeft}>
+                      <Text style={[styles.optionSymbol, { color: colors.primary }]}>{item.symbol}</Text>
+                      <Text style={[styles.optionLabel, { color: colors.textPrimary }]}>{item.label}</Text>
+                    </View>
+                    {currency.value === item.value && (
+                      <Check size={18} color={colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </TouchableOpacity>
+          </Modal>
+
           <SettingsItem icon={Zap} label="Haptic Feedback" type="toggle" />
           <SettingsItem
             icon={Clock3}
@@ -306,6 +353,32 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   logoutText: { fontSize: 16, fontWeight: "700" },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 20,
+    gap: 8,
+  },
+  modalTitle: { fontSize: 18, fontWeight: "800", marginBottom: 12, textAlign: 'center' },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  optionLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  optionSymbol: { fontSize: 20, fontWeight: "900", width: 24 },
+  optionLabel: { fontSize: 16, fontWeight: "600" },
   footerText: {
     textAlign: "center",
     marginTop: 40,

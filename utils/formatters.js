@@ -41,3 +41,10 @@ export const formatTime = (date) => {
 export const formatDecimal = (num, places = 2) => {
   return Number(num).toFixed(places);
 };
+
+/**
+ * Sanitizes input to allow only numbers and a single decimal point.
+ */
+export const sanitizeNumeric = (text) => {
+  return text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+};

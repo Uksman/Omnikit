@@ -4,16 +4,37 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const useWaterStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       intake: 0,
       goal: 2000,
-      history: [], // Daily history: { day: '2024-04-11', amount: 1500 }
+      lastUpdate: new Date().toLocaleDateString(),
+      history: [], // Last 7 days: { date: '4/11', amount: 1500 }
       
-      addIntake: (amount) => set((state) => ({ intake: state.intake + amount })),
+      checkNewDay: () => {
+        const today = new Date().toLocaleDateString();
+        const state = get();
+        if (state.lastUpdate !== today) {
+          // Save yesterday's data to history if it's not already there
+          const newHistory = [
+            { date: state.lastUpdate, amount: state.intake },
+            ...state.history,
+          ].slice(0, 7);
+          
+          set({
+            intake: 0,
+            lastUpdate: today,
+            history: newHistory,
+          });
+        }
+      },
+
+      addIntake: (amount) => {
+        get().checkNewDay();
+        set((state) => ({ intake: state.intake + amount }));
+      },
+
       resetIntake: () => set({ intake: 0 }),
       setGoal: (goal) => set({ goal }),
-      
-      // Basic reset logic for a new day could be added here or in the component
     }),
     {
       name: "omnikit-water-storage",

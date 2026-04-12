@@ -16,14 +16,32 @@ import { useRouter } from "expo-router";
 import { Buffer } from "buffer";
 import { useClipboard } from "../../hooks/useClipboard";
 
+import { useHistory } from "../../context/HistoryContext";
+import { useToast } from "../../context/ToastContext";
+
 export default function Base64Tool() {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { addHistory } = useHistory();
+  const { showToast } = useToast();
 
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [isEncode, setIsEncode] = useState(true);
+
+  const handleSave = () => {
+    if (!output || output.startsWith("Error")) return;
+    
+    addHistory({
+      type: 'base64',
+      title: isEncode ? "Base64 Encoded" : "Base64 Decoded",
+      subtitle: `${input.length} characters of data`,
+      value: `Result generated`,
+      time: "Just now",
+    });
+    showToast("Saved to Activity!");
+  };
 
   const processText = useCallback(() => {
     if (!input) {
@@ -50,6 +68,7 @@ export default function Base64Tool() {
 
   const handleCopy = async () => {
     await copyToClipboard(output);
+    showToast("Copied to clipboard!");
   };
 
   const swapMode = () => {
@@ -107,10 +126,27 @@ export default function Base64Tool() {
         </View>
 
         {/* Action Buttons */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity onPress={swapMode} style={[styles.swapBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={[styles.actionRow, { flexDirection: 'row', gap: 12 }]}>
+          <TouchableOpacity onPress={swapMode} style={[styles.swapBtn, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1 }]}>
             <RefreshCw size={20} color={colors.primary} />
-            <Text style={[styles.swapBtnText, { color: colors.textPrimary }]}>Swap Mode</Text>
+            <Text style={[styles.swapBtnText, { color: colors.textPrimary }]}>Swap</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={handleSave} 
+            disabled={!output || output.startsWith("Error")}
+            style={[
+              styles.swapBtn, 
+              { 
+                backgroundColor: colors.surface, 
+                borderColor: colors.border, 
+                flex: 1,
+                opacity: (output && !output.startsWith("Error")) ? 1 : 0.5
+              }
+            ]}
+          >
+            <Code size={20} color={colors.primary} />
+            <Text style={[styles.swapBtnText, { color: colors.textPrimary }]}>Save Activity</Text>
           </TouchableOpacity>
         </View>
 

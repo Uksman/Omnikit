@@ -80,9 +80,9 @@ export default function HomeScreen() {
 
         <View style={styles.grid}>
           {[
-            { name: "Units", icon: ArrowRightLeft, color: "#6366F1", route: "/(tabs)/tools" },
-            { name: "Tip", icon: Calculator, color: "#10B981", route: "/(tabs)/tools"  },
-            { name: "Scanner", icon: QrCode, color: "#F59E0B", route: "/(tabs)/tools"  },
+            { name: "Units", icon: ArrowRightLeft, color: "#6366F1", route: "/tools/converter" },
+            { name: "Tip", icon: Calculator, color: "#10B981", route: "/tools/tip-calculator"  },
+            { name: "Scanner", icon: QrCode, color: "#F59E0B", route: "/tools/qr-scanner"  },
           ].map((item, i) => (
             <ToolCard 
               key={i}

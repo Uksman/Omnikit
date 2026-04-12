@@ -1,11 +1,13 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Home, LayoutGrid, History, Settings } from "lucide-react-native";
 import { useAppTheme } from "../../context/ThemeContext";
 
 export default function TabLayout() {
   const { colors } = useAppTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -28,8 +30,9 @@ export default function TabLayout() {
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: Platform.OS === "ios" ? 88 : 70,
-          position: "absolute", // Makes it feel lighter
+          height: Platform.OS === "ios" ? 64 + insets.bottom : 70 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom - 4 : 8,
+          position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,
@@ -109,10 +112,9 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  // Adds a subtle glow/indicator to the active tab if you want more "pop"
   activeIndicator: {
     padding: 6,
     borderRadius: 12,
-    backgroundColor: "rgba(99, 102, 241, 0.1)", // Subtle Indigo background on focus
+    backgroundColor: "rgba(99, 102, 241, 0.1)",
   },
 });

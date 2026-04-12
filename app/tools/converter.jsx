@@ -15,14 +15,16 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, ArrowUpDown, Save, X, ChevronDown } from "lucide-react-native";
 import { useAppTheme } from "../../context/ThemeContext";
 import { useHistory } from "../../context/HistoryContext";
+import { useToast } from "../../context/ToastContext";
 import { CONVERSION_DATA } from "../../constants/conversions";
 import { calculateUnitConversion, calculateTemperatureConversion } from "../../utils/calculators";
-import { formatDecimal } from "../../utils/formatters";
+import { formatDecimal, sanitizeNumeric } from "../../utils/formatters";
 import { useCurrencyRate } from "../../hooks/useCurrencyRate";
 
 export default function ConverterScreen() {
   const { colors } = useAppTheme();
   const { addHistory } = useHistory();
+  const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const { type = "length" } = useLocalSearchParams();
   const router = useRouter();
@@ -83,7 +85,7 @@ export default function ConverterScreen() {
     });
     
     // Simple feedback
-    alert("Saved to History!");
+    showToast("Saved to Activity!");
   };
 
   return (
@@ -105,8 +107,9 @@ export default function ConverterScreen() {
             <ChevronLeft size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-            {type.toUpperCase()}
+            {type.charAt(0).toUpperCase() + type.slice(1)}
           </Text>
+          <View style={{ width: 44 }} />
         </View>
 
         <View style={styles.content}>
@@ -149,7 +152,7 @@ export default function ConverterScreen() {
               keyboardType="decimal-pad"
               autoFocus
               value={val}
-              onChangeText={setVal}
+              onChangeText={(text) => setVal(sanitizeNumeric(text))}
             />
           </TouchableOpacity>
 

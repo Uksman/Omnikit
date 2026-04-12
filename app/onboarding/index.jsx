@@ -120,7 +120,7 @@ const Onboarding = () => {
         ))}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(20, insets.bottom + 20) }]}>
         <View style={styles.indicatorContainer}>
           {pages.map((_, i) => (
             <View

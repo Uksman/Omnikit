@@ -6,92 +6,129 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Share,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft, QrCode, Share2, Download } from "lucide-react-native";
+import { ChevronLeft, QrCode, Share2, Download, X } from "lucide-react-native";
 import QRCode from "react-native-qrcode-svg";
-import * as MediaLibrary from "expo-media-library";
 import { useAppTheme } from "../../context/ThemeContext";
 import { useRouter } from "expo-router";
+import { useToast } from "../../context/ToastContext";
+
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import * as MediaLibrary from "expo-media-library";
 
 export default function QRGenerator() {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const qrRef = useRef();
+  const { showToast } = useToast();
 
   const [text, setText] = useState("");
 
   const handleShare = async () => {
-    if (!text) {
-      Alert.alert("Error", "Please enter some text or a URL first");
-      return;
-    }
-    
+    if (!text || !qrRef.current) return;
+
     qrRef.current.toDataURL(async (dataURL) => {
-      const shareOptions = {
-        title: "Share QR Code",
-        url: `data:image/png;base64,${dataURL}`,
-      };
       try {
-        await Share.share(shareOptions);
+        const fileUri = `${FileSystem.cacheDirectory}shared_qr.png`;
+
+        await FileSystem.writeAsStringAsync(fileUri, dataURL, {
+          encoding: "base64",
+        });
+
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          await Sharing.shareAsync(fileUri, {
+            mimeType: "image/png",
+            UTI: "public.png",
+          });
+        }
       } catch (error) {
-        console.error("Error sharing QR code:", error);
+        console.error("Share Error:", error);
+        showToast("Failed to share image", "error");
       }
     });
   };
 
   const handleDownload = async () => {
-    if (!text) return;
-    
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Required", "We need permission to save the QR code to your gallery");
-      return;
-    }
+    if (!text || !qrRef.current) return;
 
-    qrRef.current.toDataURL(async (dataURL) => {
-      // Logic for saving to library would typically involve writing to a temp file first in a real app
-      // For now, we'll simulate the success to keep it concise and focused on UI/UX
-      Alert.alert("Success", "QR Code saved to gallery (simulated)");
-    });
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+
+      if (status !== "granted") {
+        Alert.alert("Permission Required", "Allow access to photos to save.");
+        return;
+      }
+
+      qrRef.current.toDataURL(async (dataURL) => {
+        try {
+          const fileUri = `${FileSystem.cacheDirectory}qr_download.png`;
+
+          await FileSystem.writeAsStringAsync(fileUri, dataURL, {
+            encoding: "base64",
+          });
+
+          const asset = await MediaLibrary.createAssetAsync(fileUri);
+          await MediaLibrary.createAlbumAsync("Omnikit", asset, false);
+
+          showToast("QR Code saved to gallery!", "success");
+        } catch (err) {
+          console.error("File System Error:", err);
+          showToast("Error generating image file", "error");
+        }
+      });
+    } catch (error) {
+      console.error("Permission Error:", error);
+      showToast("Could not access gallery", "error");
+    }
   };
+
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}
-    >
-      {/* Header */}
+      style={[
+        styles.container,
+        { backgroundColor: colors.background, paddingTop: insets.top },
+      ]}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => router.back()}
-          style={[styles.backButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
-        >
+          style={[
+            styles.backButton,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}>
           <ChevronLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>QR Generator</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+          QR Generator
+        </Text>
         <View style={{ width: 44 }} />
       </View>
 
-      <ScrollView 
-        keyboardShouldPersistTaps="handled" 
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+        showsVerticalScrollIndicator={false}>
         {/* QR Display Area */}
-        <View style={[styles.qrContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.qrContainer,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}>
           {text ? (
             <View style={styles.qrWrapper}>
               <QRCode
                 value={text}
-                size={200}
-                color={colors.textPrimary}
-                backgroundColor="transparent"
+                size={220}
+                color="black"
+                backgroundColor="white"
                 getRef={(c) => (qrRef.current = c)}
               />
             </View>
@@ -106,30 +143,44 @@ export default function QRGenerator() {
         </View>
 
         {/* Action Buttons */}
-        {text ? (
+        {text && (
           <View style={styles.actionRow}>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleShare}
-              style={[styles.actionBtn, { backgroundColor: colors.primary }]}
-            >
+              style={[styles.actionBtn, { backgroundColor: colors.primary }]}>
               <Share2 size={20} color="white" />
               <Text style={styles.actionBtnText}>Share</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               onPress={handleDownload}
-              style={[styles.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 }]}
-            >
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                },
+              ]}>
               <Download size={20} color={colors.textPrimary} />
-              <Text style={[styles.actionBtnText, { color: colors.textPrimary }]}>Save</Text>
+              <Text
+                style={[styles.actionBtnText, { color: colors.textPrimary }]}>
+                Save
+              </Text>
             </TouchableOpacity>
           </View>
-        ) : null}
+        )}
 
         {/* Input Area */}
         <View style={styles.inputSection}>
-          <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>CONTENT (TEXT OR URL)</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
+            CONTENT (TEXT OR URL)
+          </Text>
+          <View
+            style={[
+              styles.inputWrapper,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}>
             <TextInput
               placeholder="e.g. https://google.com"
               placeholderTextColor={colors.textMuted}
@@ -137,19 +188,17 @@ export default function QRGenerator() {
               style={[styles.textInput, { color: colors.textPrimary }]}
               value={text}
               onChangeText={setText}
+              autoCapitalize="none"
+              autoCorrect={false}
             />
             {text ? (
-              <TouchableOpacity onPress={() => setText("")}>
-                <Text style={{ color: colors.primary, fontWeight: "600" }}>Clear</Text>
+              <TouchableOpacity
+                onPress={() => setText("")}
+                style={styles.clearButton}>
+                <X size={18} color={colors.textMuted} />
               </TouchableOpacity>
             ) : null}
           </View>
-        </View>
-
-        <View style={styles.tipBox}>
-          <Text style={[styles.tipText, { color: colors.textMuted }]}>
-            Tip: QR codes are great for sharing website links, contact info, or Wi-Fi passwords quickly.
-          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -173,15 +222,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-  },
-  scrollContent: {
-    padding: 24,
-    paddingBottom: 40,
-    alignItems: "center",
-  },
+  headerTitle: { fontSize: 20, fontWeight: "800" },
+  scrollContent: { padding: 24, alignItems: "center" },
   qrContainer: {
     width: "100%",
     aspectRatio: 1,
@@ -191,34 +233,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 24,
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
   },
   qrWrapper: {
-    padding: 16,
-    backgroundColor: "white", // QR codes are best read on solid white
-    borderRadius: 16,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 24,
+    // Add shadow to make it look nicer
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  emptyQr: {
-    alignItems: "center",
-    gap: 16,
-    paddingHorizontal: 40,
-  },
+  emptyQr: { alignItems: "center", gap: 16, paddingHorizontal: 40 },
   emptyText: {
     textAlign: "center",
     fontSize: 14,
     fontWeight: "500",
     lineHeight: 20,
   },
-  actionRow: {
-    flexDirection: "row",
-    gap: 12,
-    width: "100%",
-    marginBottom: 32,
-  },
+  actionRow: { flexDirection: "row", gap: 12, width: "100%", marginBottom: 32 },
   actionBtn: {
     flex: 1,
     height: 56,
@@ -228,44 +262,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  actionBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "white",
-  },
-  inputSection: {
-    width: "100%",
-    gap: 12,
-  },
-  inputLabel: {
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 1,
-  },
+  actionBtnText: { fontSize: 16, fontWeight: "700", color: "white" },
+  inputSection: { width: "100%", gap: 12 },
+  inputLabel: { fontSize: 11, fontWeight: "900", letterSpacing: 1 },
   inputWrapper: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    minHeight: 100,
-    borderRadius: 20,
+    minHeight: 80,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 16,
-    gap: 12,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
   },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "600",
-    textAlignVertical: "top",
-    paddingTop: 0,
-  },
-  tipBox: {
-    marginTop: 32,
-    paddingHorizontal: 20,
-  },
-  tipText: {
-    fontSize: 13,
-    textAlign: "center",
-    lineHeight: 18,
-    fontStyle: "italic",
-  },
+  textInput: { flex: 1, fontSize: 16, fontWeight: "600", paddingVertical: 12 },
+  clearButton: { padding: 8 },
 });

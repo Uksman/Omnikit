@@ -12,16 +12,26 @@ import {
 // Add this import
 import Slider from "@react-native-community/slider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft, Users, DollarSign } from "lucide-react-native";
+import {
+  ChevronLeft,
+  Users,
+} from "lucide-react-native";
 import { useAppTheme } from "../../context/ThemeContext";
 import { useRouter } from "expo-router";
 import { calculateTipValues } from "../../utils/calculators";
-import { formatDecimal } from "../../utils/formatters";
+import { formatDecimal, sanitizeNumeric } from "../../utils/formatters";
+
+import { useHistory } from "../../context/HistoryContext";
+import { useToast } from "../../context/ToastContext";
+import { useCurrencyStore } from "../../store/useCurrencyStore";
 
 export default function TipCalculator() {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { addHistory } = useHistory();
+  const { showToast } = useToast();
+  const { currency } = useCurrencyStore();
 
   const [bill, setBill] = useState("");
   const [tipPercent, setTipPercent] = useState(15);
@@ -31,6 +41,19 @@ export default function TipCalculator() {
     totalBill: 0,
     perPerson: 0,
   });
+
+  const handleSave = () => {
+    if (results.totalBill <= 0) return;
+    
+    addHistory({
+      type: 'tip',
+      title: `${currency.symbol}${results.totalBill.toFixed(2)} bill`,
+      subtitle: `${tipPercent}% tip | ${people} people`,
+      value: `${currency.symbol}${results.perPerson.toFixed(2)} each`,
+      time: "Just now",
+    });
+    showToast("Saved to Activity!");
+  };
 
   useEffect(() => {
     const result = calculateTipValues(bill, tipPercent, people);
@@ -54,28 +77,45 @@ export default function TipCalculator() {
           ]}>
           <ChevronLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-          Tip Calc
-        </Text>
-        <View style={{ width: 44 }} />
-      </View>
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+            Tip Calc
+          </Text>
+          <View style={{ width: 44 }} />
+        </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Results Card (Modified to look more like a dynamic receipt) */}
         <View style={[styles.resultCard, { backgroundColor: colors.primary }]}>
           <Text style={styles.resultLabel}>Total Per Person</Text>
           <Text style={styles.resultValue}>
-            ${results.perPerson.toFixed(2)}
+            {currency.symbol}{results.perPerson.toFixed(2)}
           </Text>
           <View style={styles.resultRow}>
             <Text style={styles.subResultText}>
-              Bill: ${formatDecimal(bill || 0)}
+              Bill: {currency.symbol}{formatDecimal(bill || 0)}
             </Text>
             <Text style={styles.subResultText}>
-              Tip: ${formatDecimal(results.tipAmount)}
+              Tip: {currency.symbol}{formatDecimal(results.tipAmount)}
             </Text>
           </View>
         </View>
+
+        {/* Save Button */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={handleSave}
+          style={[
+            styles.saveButton,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              opacity: results.totalBill > 0 ? 1 : 0.5,
+            },
+          ]}
+          disabled={results.totalBill <= 0}
+        >
+          <Text style={[styles.saveButtonText, { color: colors.textPrimary }]}>Save to Activity</Text>
+        </TouchableOpacity>
 
         {/* Bill Input */}
         <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
@@ -86,14 +126,14 @@ export default function TipCalculator() {
             styles.inputWrapper,
             { backgroundColor: colors.surface, borderColor: colors.border },
           ]}>
-          <DollarSign size={20} color={colors.primary} />
+          <Text style={[styles.currencyLabel, { color: colors.primary }]}>{currency.symbol}</Text>
           <TextInput
             placeholder="0.00"
             placeholderTextColor={colors.textMuted}
             keyboardType="decimal-pad"
             style={[styles.textInput, { color: colors.textPrimary }]}
             value={bill}
-            onChangeText={setBill}
+            onChangeText={(text) => setBill(sanitizeNumeric(text))}
           />
         </View>
 
@@ -179,7 +219,21 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 20, fontWeight: "800" },
   scrollContent: { padding: 24 },
-  resultCard: { borderRadius: 28, padding: 24, marginBottom: 32 },
+  resultCard: { borderRadius: 28, padding: 24, marginBottom: 20 },
+  saveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 20,
+    marginBottom: 32,
+    gap: 10,
+    borderWidth: 1,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
   resultLabel: {
     color: "rgba(255,255,255,0.7)",
     fontWeight: "700",
@@ -214,6 +268,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   textInput: { flex: 1, fontSize: 18, fontWeight: "700" },
+  currencyLabel: { fontSize: 20, fontWeight: "900" },
   sliderSection: { marginTop: 32 },
   sliderHeader: {
     flexDirection: "row",

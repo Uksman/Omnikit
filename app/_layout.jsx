@@ -1,19 +1,21 @@
-import { Stack } from "expo-router";
+import { Stack, ErrorBoundary } from "expo-router";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, useAppTheme } from "../context/ThemeContext";
 import { HistoryProvider } from "../context/HistoryContext";
-import { OnboardingProvider, useOnboarding } from "../context/OnboardingContext";
+import { OnboardingProvider } from "../context/OnboardingContext";
+import { useOnboardingStore } from "../store/useOnboardingStore";
+import { ToastProvider } from "../context/ToastContext";
+import { Toast } from "../components/Toast";
 
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
+// Error Boundary for the whole app
+export { ErrorBoundary };
 
 function AppNavigator() {
   const { colors } = useAppTheme();
-  const { isCompleted } = useOnboarding();
+  const _hasHydrated = useOnboardingStore((state) => state._hasHydrated);
 
-  if (isCompleted === null) return null;
+  if (!_hasHydrated) return null;
 
   return (
     <Stack
@@ -24,9 +26,6 @@ function AppNavigator() {
     >
       <Stack.Screen 
         name="onboarding/index" 
-        options={{ 
-          redirect: isCompleted 
-        }} 
       />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen
@@ -46,11 +45,14 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <OnboardingProvider>
-          <HistoryProvider>
-            <AppNavigator />
-          </HistoryProvider>
-        </OnboardingProvider>
+        <ToastProvider>
+          <OnboardingProvider>
+            <HistoryProvider>
+              <AppNavigator />
+              <Toast />
+            </HistoryProvider>
+          </OnboardingProvider>
+        </ToastProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
