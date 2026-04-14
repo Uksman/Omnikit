@@ -19,17 +19,6 @@ Omnikit is a high-performance, premium utility application built with **React Na
 
 ---
 
-## 🏗️ Architecture
-
-The project recently underwent a major architectural refactor to ensure maximum maintainability and scalability:
-
-- **Modular UI**: Reusable components (`PromoCarousel`, `HistoryCard`, `ToolItem`) extracted into `components/`.
-- **Centralized Logic**: Business logic and complex calculations decoupled from UI into `utils/calculators.js`.
-- **Custom Hooks**: Standardized data fetching (Currency rates) and side effects (Clipboard) via `hooks/`.
-- **State Management**: Global app state (Theme, History, Water) managed via **Zustand**.
-
----
-
 ## 🚀 Getting Started
 
 ### Prerequisites
