@@ -50,6 +50,47 @@ export const calculateBMIScore = (weight, height) => {
 };
 
 /**
+ * Calculates full loan details including an amortization schedule.
+ * 
+ */
+export const calculateLoanDetails = (amount, rate, term) => {
+  const p = parseFloat(amount);
+  const r = parseFloat(rate) / 100 / 12;
+  const n = parseFloat(term) * 12;
+
+  if (p > 0 && r > 0 && n > 0) {
+    const x = Math.pow(1 + r, n);
+    const monthly = (p * x * r) / (x - 1);
+    const total = monthly * n;
+    const interest = total - p;
+
+    // Build amortization schedule
+    const amortization = [];
+    let balance = p;
+    for (let i = 0; i < n; i++) {
+      const interestPayment = balance * r;
+      const principalPayment = monthly - interestPayment;
+      balance -= principalPayment;
+      amortization.push({
+        month: i + 1,
+        payment: monthly.toFixed(2),
+        principal: principalPayment.toFixed(2),
+        interest: interestPayment.toFixed(2),
+        balance: Math.max(0, balance).toFixed(2),
+      });
+    }
+
+    return {
+      monthly: monthly.toFixed(2),
+      total: total.toFixed(2),
+      interest: interest.toFixed(2),
+      amortization,
+    };
+  }
+  return { monthly: "0.00", total: "0.00", interest: "0.00", amortization: [] };
+};
+
+/**
  * Calculates monthly loan payments.
  */
 export const calculateMonthlyPayment = (amount, rate, term) => {

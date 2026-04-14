@@ -9,9 +9,6 @@ import { useAppTheme } from "../context/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
-/**
- * Standard card for tool grids (Home screen mini-grid or Tools screen list).
- */
 export const ToolCard = ({ name, icon: Icon, color, onPress, size = "small" }) => {
   const { colors } = useAppTheme();
 

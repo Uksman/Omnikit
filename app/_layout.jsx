@@ -37,6 +37,7 @@ function AppNavigator() {
       />
       <Stack.Screen name="tools/qr-generator" />
       <Stack.Screen name="tools/qr-scanner" />
+      <Stack.Screen name="tools/task-manager" />
     </Stack>
   );
 }

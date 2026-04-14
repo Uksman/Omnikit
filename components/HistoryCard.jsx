@@ -19,13 +19,9 @@ import {
 } from "lucide-react-native";
 import { useAppTheme } from "../context/ThemeContext";
 
-/**
- * Standard card for history and recent activity logs.
- */
 export const HistoryCard = ({ type, title, subtitle, time, value, onPress, compact = false }) => {
   const { colors } = useAppTheme();
 
-  // Unified configuration for all tool types
   const config = {
     convert: { icon: Repeat, color: "#6366F1", label: "Unit" },
     tip: { icon: Calculator, color: "#10B981", label: "Tip" },
@@ -39,7 +35,6 @@ export const HistoryCard = ({ type, title, subtitle, time, value, onPress, compa
     timer: { icon: Clock, color: "#F43F5E", label: "Time" },
   };
 
-  // Fallback if type is missing or unknown
   const toolConfig = config[type] || { icon: Repeat, color: colors.primary, label: "Tool" };
   const { icon: Icon, color, label } = toolConfig;
 
@@ -107,7 +102,6 @@ export const HistoryCard = ({ type, title, subtitle, time, value, onPress, compa
 };
 
 const styles = StyleSheet.create({
-  // Full Card Styles
   card: {
     padding: 16,
     borderRadius: 20,
@@ -139,8 +133,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 18, fontWeight: "700", marginBottom: 2 },
   cardSubtitle: { fontSize: 13, fontWeight: "500" },
   cardValue: { fontSize: 20, fontWeight: "800", letterSpacing: -0.5 },
-
-  // Compact Styles (for Home screen)
   compactActivityItem: { flexDirection: "row", alignItems: "center", gap: 12 },
   activityIcon: {
     width: 36,

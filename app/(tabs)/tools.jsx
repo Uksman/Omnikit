@@ -47,6 +47,7 @@ export default function ToolsScreen() {
     converters: false,
     finance: false,
     utilities: false,
+    productivity: false,
   });
 
   const toolSections = TOOL_SECTIONS.map((section) => ({

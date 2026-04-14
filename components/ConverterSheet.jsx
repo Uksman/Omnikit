@@ -35,7 +35,7 @@ export default function ConverterSheet({ type, onClose }) {
   const [toUnit, setToUnit] = useState(
     config.isTemp || config.isCurrency ? config.units[1] : Object.keys(config.units)[1]
   );
-  const [showPicker, setShowPicker] = useState(null); // 'from' or 'to'
+  const [showPicker, setShowPicker] = useState(null); 
   
   const { rate: liveRate, isLoading: isFetching, error: fetchError } = useCurrencyRate(
     fromUnit,

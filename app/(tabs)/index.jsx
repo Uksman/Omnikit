@@ -7,10 +7,10 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  ArrowRightLeft,
   Calculator,
   QrCode,
   Bell,
+  ListTodo,
 } from "lucide-react-native";
 import { useAppTheme } from "../../context/ThemeContext";
 import { useHistory } from "../../context/HistoryContext";
@@ -33,12 +33,10 @@ export default function HomeScreen() {
       style={[
         styles.container,
         { backgroundColor: colors.background, paddingTop: insets.top },
-      ]}
-    >
+      ]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+        contentContainerStyle={styles.scrollContent}>
         {/* REFINED HEADER */}
         <View style={styles.header}>
           <View>
@@ -53,8 +51,7 @@ export default function HomeScreen() {
             style={[
               styles.notifButton,
               { backgroundColor: colors.surface, borderColor: colors.border },
-            ]}
-          >
+            ]}>
             <Bell size={20} color={colors.textPrimary} />
             <View
               style={[styles.notifDot, { backgroundColor: colors.primary }]}
@@ -71,8 +68,11 @@ export default function HomeScreen() {
           </Text>
           <TouchableOpacity onPress={() => router.push("/(tabs)/tools")}>
             <Text
-              style={{ color: colors.primary, fontWeight: "700", fontSize: 12 }}
-            >
+              style={{
+                color: colors.primary,
+                fontWeight: "700",
+                fontSize: 12,
+              }}>
               See All
             </Text>
           </TouchableOpacity>
@@ -80,11 +80,26 @@ export default function HomeScreen() {
 
         <View style={styles.grid}>
           {[
-            { name: "Units", icon: ArrowRightLeft, color: "#6366F1", route: "/tools/converter" },
-            { name: "Tip", icon: Calculator, color: "#10B981", route: "/tools/tip-calculator"  },
-            { name: "Scanner", icon: QrCode, color: "#F59E0B", route: "/tools/qr-scanner"  },
+            {
+              name: "Checklist",
+              icon: ListTodo,
+              color: "#6366F1",
+              route: "/tools/task-manager",
+            },
+            {
+              name: "Tip",
+              icon: Calculator,
+              color: "#10B981",
+              route: "/tools/tip-calculator",
+            },
+            {
+              name: "Scanner",
+              icon: QrCode,
+              color: "#F59E0B",
+              route: "/tools/qr-scanner",
+            },
           ].map((item, i) => (
-            <ToolCard 
+            <ToolCard
               key={i}
               name={item.name}
               icon={item.icon}
@@ -102,32 +117,43 @@ export default function HomeScreen() {
           </Text>
           <TouchableOpacity onPress={() => router.push("/(tabs)/history")}>
             <Text
-              style={{ color: colors.primary, fontWeight: "700", fontSize: 12 }}
-            >
+              style={{
+                color: colors.primary,
+                fontWeight: "700",
+                fontSize: 12,
+              }}>
               Full History
             </Text>
           </TouchableOpacity>
         </View>
-        
+
         <View
           style={[
             styles.recentActivity,
             { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-        >
+          ]}>
           {recentHistory.length === 0 ? (
-            <Text style={{ color: colors.textMuted, textAlign: "center", padding: 10 }}>
+            <Text
+              style={{
+                color: colors.textMuted,
+                textAlign: "center",
+                padding: 10,
+              }}>
               No recent activity
             </Text>
           ) : (
             recentHistory.map((item, index) => (
-              <View 
+              <View
                 key={item.id}
                 style={[
-                  index !== recentHistory.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 12, marginBottom: 12 }
-                ]}
-              >
-                <HistoryCard 
+                  index !== recentHistory.length - 1 && {
+                    borderBottomWidth: 1,
+                    borderBottomColor: colors.border,
+                    paddingBottom: 12,
+                    marginBottom: 12,
+                  },
+                ]}>
+                <HistoryCard
                   type={item.type}
                   title={item.title}
                   time={item.time}

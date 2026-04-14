@@ -2,9 +2,6 @@ import { useState } from "react";
 import { Alert } from "react-native";
 import * as Clipboard from "expo-clipboard";
 
-/**
- * Hook to handle clipboard operations with feedback.
- */
 export const useClipboard = () => {
   const [hasCopied, setHasCopied] = useState(false);
 

@@ -14,6 +14,7 @@ import {
   Activity,
   Droplets,
   Timer,
+  ListTodo,
 } from "lucide-react-native";
 
 export const TOOL_SECTIONS = [
@@ -158,6 +159,20 @@ export const TOOL_SECTIONS = [
         description: "High-precision time tracking",
         color: "#8B5CF6",
         route: "/tools/timer-tool",
+      },
+    ],
+  },
+  {
+    id: "productivity",
+    title: "PRODUCTIVITY",
+    tools: [
+      {
+        id: "tasks",
+        icon: ListTodo,
+        title: "Task List",
+        description: "Create & manage your to-dos",
+        color: "#6366F1",
+        route: "/tools/task-manager",
       },
     ],
   },

@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
 
-/**
- * Hook to fetch and manage currency exchange rates.
- */
 export const useCurrencyRate = (fromUnit, toUnit, isEnabled) => {
   const [rate, setRate] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +32,7 @@ export const useCurrencyRate = (fromUnit, toUnit, isEnabled) => {
       } catch (err) {
         console.error("Currency fetch error:", err);
         setError("Could not fetch latest rates.");
-        setRate(0.92); // Basic fallback rate
+        setRate(0.92);
       } finally {
         setIsLoading(false);
       }

@@ -9,11 +9,13 @@ Omnikit is a high-performance, premium utility application built with **React Na
 - **Finance & Math**: Loan/Mortgage, Compound Interest, Discount, and Tip calculators.
 - **Security & Data**: Secure Password Generator, Base64 Encoder/Decoder, QR Generator, and QR Scanner.
 - **Health & Lifestyle**: BMI Calculator, Daily Water Tracker, and High-precision Stopwatch.
+- **Productivity**: Task/Checklist Manager — create, complete, edit, and delete tasks with priority levels (High / Medium / Low), fully persisted offline via AsyncStorage.
 
 ### 🎨 Premium Experience
 - **Dynamic Theming**: Automatically syncs with system appearance or allows manual override (Indigo-primary palette).
 - **Activity History**: Locally persists your calculation results for quick reference.
 - **Rich Interaction**: Smooth micro-animations, glassmorphism-inspired UI, and intuitive bottom-sheet editors.
+- **Offline-First**: All tools work without an internet connection. Tasks and history are stored locally using Zustand + AsyncStorage.
 
 ---
 
